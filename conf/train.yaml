@@ -1,0 +1,30 @@
+defaults:
+  - model: gemma
+  - _self_
+
+# Dataset config
+dataset_path: dataset/processed
+max_seq_length: 1024
+
+# Training hyperparameters
+per_device_train_batch_size: 4
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 4
+num_train_epochs: 3
+learning_rate: 2e-5
+lr_scheduler_type: cosine
+weight_decay: 0.01
+warmup_ratio: 0.02
+
+# Logging & Checkpointing
+logging_steps: 10
+eval_strategy: epoch
+save_strategy: epoch
+output_dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+run_name: medmcqa_ft_${model.name}
+
+# Wandb
+wandb:
+  project: MediTune
+  entity: pratzohol   # optionally set your wandb username/org
+  mode: online   # "disabled" to turn off
