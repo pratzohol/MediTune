@@ -8,19 +8,18 @@ max_seq_length: 1024
 
 # Training hyperparameters
 per_device_train_batch_size: 4
-per_device_eval_batch_size: 8
+per_device_eval_batch_size: 16
 gradient_accumulation_steps: 4
-num_train_epochs: 3
+num_train_epochs: 5
 learning_rate: 2e-5
 lr_scheduler_type: cosine
 weight_decay: 0.01
-warmup_ratio: 0.02
 
 # Logging & Checkpointing
-logging_steps: 10
+logging_steps: 250
 eval_strategy: epoch
-save_strategy: epoch
-output_dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+save_strategy: no
+output_dir: outputs
 run_name: medmcqa_ft_${model.name}
 
 # Wandb

@@ -33,6 +33,13 @@ def get_tokenized_datasets(
 
         # Labels = input_ids (causal LM objective)
         tokenized["labels"] = tokenized["input_ids"].copy()
+
+        # Mask out padding tokens for loss
+        tokenized["labels"] = [
+            label if mask == 1 else -100
+            for label, mask in zip(tokenized["labels"], tokenized["attention_mask"])
+        ]
+
         return tokenized
 
     print("Tokenizing datasets...")
