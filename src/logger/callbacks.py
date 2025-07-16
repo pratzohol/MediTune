@@ -12,14 +12,7 @@ class WandbLoggingCallback(TrainerCallback):
     Custom callback for logging detailed stats to Weights & Biases.
     """
 
-    def on_log(
-        self,
-        args: TrainingArguments,
-        state: TrainerState,
-        control: TrainerControl,
-        logs=None,
-        **kwargs
-    ):
+    def on_log(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, logs=None, **kwargs):
         if logs is None:
             return
 
@@ -33,27 +26,12 @@ class WandbLoggingCallback(TrainerCallback):
             step=state.global_step,
         )
 
-    def on_evaluate(
-        self,
-        args: TrainingArguments,
-        state: TrainerState,
-        control: TrainerControl,
-        metrics,
-        **kwargs
-    ):
+    def on_evaluate(self, args: TrainingArguments, state: TrainerState, control: TrainerControl, metrics, **kwargs):
         wandb.log(
             {
                 "eval/accuracy": metrics.get("eval_accuracy"),
                 "eval/loss": metrics.get("eval_loss"),
                 "eval/epoch": state.epoch,
-            },
-            step=state.global_step,
-        )
-
-    def on_save(self, args, state, control, **kwargs):
-        wandb.log(
-            {
-                "checkpoint/step": state.global_step,
             },
             step=state.global_step,
         )

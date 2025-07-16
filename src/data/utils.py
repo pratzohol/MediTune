@@ -48,7 +48,6 @@ def get_tokenized_datasets(
         {
             split: dataset[split].map(
                 format_and_tokenize,
-                remove_columns=dataset[split].column_names,
                 desc=f"Tokenizing {split} split",
             )
             for split in dataset

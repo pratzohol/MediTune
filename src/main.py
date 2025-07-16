@@ -8,10 +8,10 @@ from datasets import load_from_disk
 from omegaconf import DictConfig
 from transformers import DataCollatorWithPadding, Trainer, TrainingArguments
 
-from src.callbacks import build_callbacks
 from src.data.utils import get_tokenized_datasets
-from src.metrics.evaluate import compute_metrics
+from src.logger.callbacks import build_callbacks
 from src.models.loader import load_model_and_tokenizer
+from src.train.trainer import CustomTrainer
 
 
 @hydra.main(config_path="../conf", config_name="train", version_base="1.3")
@@ -45,8 +45,7 @@ def main(cfg: DictConfig):
         per_device_eval_batch_size=cfg.per_device_eval_batch_size,
         gradient_accumulation_steps=cfg.gradient_accumulation_steps,
         evaluation_strategy=cfg.eval_strategy,
-        save_strategy=cfg.save_strategy,
-        save_total_limit=2,
+        save_strategy="no",
         load_best_model_at_end=True,
         metric_for_best_model="eval_accuracy",
         greater_is_better=True,
@@ -56,14 +55,13 @@ def main(cfg: DictConfig):
     )
 
     # Trainer setup
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,
         args=training_args,
         train_dataset=tokenized["train"],
         eval_dataset=tokenized["validation"],
         tokenizer=tokenizer,
         data_collator=DataCollatorWithPadding(tokenizer),
-        compute_metrics=compute_metrics,
         callbacks=build_callbacks(),
     )
 

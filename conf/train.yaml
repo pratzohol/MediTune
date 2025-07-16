@@ -18,7 +18,6 @@ weight_decay: 0.01
 # Logging & Checkpointing
 logging_steps: 250
 eval_strategy: epoch
-save_strategy: no
 output_dir: outputs
 run_name: medmcqa_ft_${model.name}
 
