@@ -40,7 +40,7 @@ def load_model_and_tokenizer(cfg):
         trust_remote_code=True,
         quantization_config=quant_config,
     )
-    # model.config.pad_token_id = tokenizer.pad_token_id
+    model.config.pad_token_id = tokenizer.pad_token_id
 
     # Apply PEFT if enabled
     if use_peft:
@@ -48,6 +48,8 @@ def load_model_and_tokenizer(cfg):
         # LoRA + QLoRA + gradient_checkpointing is the golden trio for low-VRAM training.
         model.gradient_checkpointing_enable()
         model = prepare_model_for_kbit_training(model)
+
+        breakpoint()
 
         lora_cfg = LoraConfig(
             r=model_cfg.lora_r,
