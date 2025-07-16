@@ -25,5 +25,5 @@ run_name: medmcqa_ft_${model.name}
 # Wandb
 wandb:
   project: MediTune
-  entity: pratzohol   # optionally set your wandb username/org
+  entity: pratzohol   # wandb username
   mode: online   # "disabled" to turn off
