@@ -1,5 +1,3 @@
-# src/models/loader.py
-
 import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
@@ -36,21 +34,26 @@ def load_model_and_tokenizer(cfg):
     # Load model (with or without quant config)
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        device_map="auto",
+        device_map="cuda:0",
         trust_remote_code=True,
         quantization_config=quant_config,
     )
-    model.config.pad_token_id = tokenizer.pad_token_id
+    if model.config.pad_token_id is None:
+        model.config.pad_token_id = tokenizer.pad_token_id
+
+    # we are doing this in TrainingArguments Class in main.py ⬇️
+    # model.gradient_checkpointing_enable()
 
     # Apply PEFT if enabled
     if use_peft:
         # Use this to reduce memory overhead
         # LoRA + QLoRA + gradient_checkpointing is the golden trio for low-VRAM training.
-        model.gradient_checkpointing_enable()
-        model = prepare_model_for_kbit_training(model)
 
-        breakpoint()
+        # Required only for QLoRA: prepares model for 4-bit training
+        if load_in_4bit:
+            model = prepare_model_for_kbit_training(model)
 
+        # By default, wraps {q_proj, v_proj}
         lora_cfg = LoraConfig(
             r=model_cfg.lora_r,
             lora_alpha=model_cfg.lora_alpha,
@@ -59,10 +62,5 @@ def load_model_and_tokenizer(cfg):
             task_type="CAUSAL_LM",
         )
         model = get_peft_model(model, lora_cfg)
-        print("PEFT (LoRA/QLoRA) mode.")
-
-    else:
-        model.gradient_checkpointing_enable()
-        print("Full fine-tuning mode (no PEFT).")
 
     return tokenizer, model

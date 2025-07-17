@@ -1,5 +1,9 @@
 import os
+import sys
 from pathlib import Path
+
+pardir = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(pardir)
 
 import hydra
 import torch
@@ -36,6 +40,8 @@ def main(cfg: DictConfig):
     training_args = TrainingArguments(
         output_dir=cfg.output_dir,
         run_name=cfg.run_name,
+        gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         fp16=torch.cuda.is_available(),
         learning_rate=cfg.learning_rate,
         lr_scheduler_type=cfg.lr_scheduler_type,
@@ -44,18 +50,23 @@ def main(cfg: DictConfig):
         per_device_train_batch_size=cfg.per_device_train_batch_size,
         per_device_eval_batch_size=cfg.per_device_eval_batch_size,
         gradient_accumulation_steps=cfg.gradient_accumulation_steps,
-        evaluation_strategy=cfg.eval_strategy,
-        save_strategy="no",
-        load_best_model_at_end=True,
-        metric_for_best_model="eval_accuracy",
-        greater_is_better=True,
+        eval_strategy=cfg.eval_strategy,
+        eval_steps=cfg.eval_steps,
+        save_strategy=cfg.save_strategy,
+        save_steps=cfg.save_steps,
+        save_total_limit=2,
+        load_best_model_at_end=cfg.load_best_model_at_end,
+        metric_for_best_model=cfg.metric_for_best_model,
+        greater_is_better=cfg.greater_is_better,
         report_to=["wandb"],
         logging_dir=f"{cfg.output_dir}/logs",
         logging_steps=cfg.logging_steps,
+        label_names=["labels"],
     )
 
     # Trainer setup
     trainer = CustomTrainer(
+        cfg=cfg,
         model=model,
         args=training_args,
         train_dataset=tokenized["train"],
@@ -64,11 +75,6 @@ def main(cfg: DictConfig):
         data_collator=DataCollatorWithPadding(tokenizer),
         callbacks=build_callbacks(),
     )
-
-    # Evaluation on Base Model
-    print("Evaluation on test set for BASE MODEL:")
-    test_results = trainer.evaluate(tokenized["test"])
-    print(test_results)
 
     # Launch training
     trainer.train()
@@ -79,7 +85,6 @@ def main(cfg: DictConfig):
 
     print(f"Saving best model to: {output_path}")
     model.save_pretrained(output_path)
-    tokenizer.save_pretrained(output_path)
 
     # Final evaluation
     print("Evaluation on test set for FINE_TUNED MODEL:")

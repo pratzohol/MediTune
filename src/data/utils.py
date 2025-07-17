@@ -20,7 +20,7 @@ def get_tokenized_datasets(dataset: DatasetDict, tokenizer: PreTrainedTokenizer,
 
     def format_and_tokenize(example):
         # Combine input and answer in causal LM style
-        full_text = example["input"] + "\n\nAnswer: " + example["output"]
+        full_text = example["input"] + "\n\nAnswer -->  " + example["output"]
 
         tokenized = tokenizer(
             full_text,
@@ -40,7 +40,6 @@ def get_tokenized_datasets(dataset: DatasetDict, tokenizer: PreTrainedTokenizer,
         return tokenized
 
     print("Tokenizing datasets...")
-
     tokenized_dataset = DatasetDict(
         {
             split: dataset[split].map(
@@ -50,7 +49,6 @@ def get_tokenized_datasets(dataset: DatasetDict, tokenizer: PreTrainedTokenizer,
             for split in dataset
         }
     )
-
     return tokenized_dataset
 
 
@@ -98,8 +96,6 @@ def load_and_prepare_medmcqa(
     dataset["validation"] = dataset["train"].select(range(ntrain, ntrain + nval))
     dataset["train"] = dataset["train"].select(range(ntrain))
 
-    breakpoint()
-
     # Format dataset
     formatted_dataset = DatasetDict(
         {
@@ -112,10 +108,8 @@ def load_and_prepare_medmcqa(
         }
     )
 
-    breakpoint()
-
     # creates intermediary parent folders if it doesn't exist
-    # eist_ok doesn't raise error if directory is already present
+    # exist_ok doesn't raise error if directory is already present
     output_path.mkdir(parents=True, exist_ok=True)
     print(f"Saving processed dataset to: {output_path}")
     formatted_dataset.save_to_disk(str(output_path))
