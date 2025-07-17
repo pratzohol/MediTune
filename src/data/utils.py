@@ -5,9 +5,7 @@ from datasets import Dataset, DatasetDict, load_dataset
 from transformers import PreTrainedTokenizer
 
 
-def get_tokenized_datasets(
-    dataset: DatasetDict, tokenizer: PreTrainedTokenizer, max_seq_length: int = 512
-):
+def get_tokenized_datasets(dataset: DatasetDict, tokenizer: PreTrainedTokenizer, max_seq_length: int = 512):
     """
     Applies formatting and tokenization to each split of the dataset.
 
@@ -36,8 +34,7 @@ def get_tokenized_datasets(
 
         # Mask out padding tokens for loss
         tokenized["labels"] = [
-            label if mask == 1 else -100
-            for label, mask in zip(tokenized["labels"], tokenized["attention_mask"])
+            label if mask == 1 else -100 for label, mask in zip(tokenized["labels"], tokenized["attention_mask"])
         ]
 
         return tokenized
@@ -76,9 +73,7 @@ def load_and_prepare_medmcqa(
 
     # Check if processed folder exists and is non-empty
     if output_path.exists() and any(output_path.iterdir()):
-        print(
-            f"Found existing processed dataset at: {output_path}, skipping raw processing."
-        )
+        print(f"Found existing processed dataset at: {output_path}, skipping raw processing.")
         return
 
     print("Loading MedMCQA dataset from HuggingFace...")
@@ -103,6 +98,8 @@ def load_and_prepare_medmcqa(
     dataset["validation"] = dataset["train"].select(range(ntrain, ntrain + nval))
     dataset["train"] = dataset["train"].select(range(ntrain))
 
+    breakpoint()
+
     # Format dataset
     formatted_dataset = DatasetDict(
         {
@@ -114,6 +111,8 @@ def load_and_prepare_medmcqa(
             for split in dataset
         }
     )
+
+    breakpoint()
 
     # creates intermediary parent folders if it doesn't exist
     # eist_ok doesn't raise error if directory is already present
